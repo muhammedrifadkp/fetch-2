@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- post data -->
+    <h1>post</h1>
+    <form id="form">
+      <input type="text" name="name" placeholder="name" />
+      <input type="number" name="age" placeholder="age" />
+      <button>add new user</button>
+    </form>
+
+    <!-- edit data -->
+    <h1>put</h1>
+    <form id="putForm">
+      <input type="text" name="editId" id="setId" placeholder="edit id" />
+      <input
+        type="text"
+        name="editedName"
+        id="setName"
+        placeholder="edited name"
+      />
+      <input
+        type="number"
+        name="editedAge"
+        id="setAge"
+        placeholder="edited age"
+      />
+      <button>edit user</button>
+    </form>
+
+    <!-- get data  -->
+    <h1>get</h1>
+    <div id="mydiv"></div>
+
+    <script>
+      // get
+      async function getData() {
+        let res = await fetch("http://localhost:3000/users"); // return Response
+        let users = await res.json(); // return [dataas]
+        let mydiv = document.querySelector("#mydiv");
+        users.forEach((user, i) => {
+          mydiv.innerHTML =
+            mydiv.innerHTML +
+            `<p>name : ${user.name} | age : ${user.age}  |  id : ${user.id} 
+              <button onclick="editData('${user.id}','${user.name}',${user.age})">edit</button>
+              <button onclick="deleteUser('${user.id}')">Delete</button>
+            </p>`;
+        });
+      }
+      getData();
+
+      // post data
+
+      let form = document.querySelector("#form");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        let name = e.target.name.value;
+        let age = e.target.age.value;
+        if (!name || !age) return; // stop programe
+
+        let newUser = {
+          name, // name = name
+          age: parseInt(age),
+        };
+
+        await fetch("http://localhost:3000/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newUser),
+        }); // fetch("url",{option})
+      });
+
+      // put
+      let putForm = document.querySelector("#putForm");
+      putForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        let editId = e.target.editId.value;
+
+        let editedName = e.target.editedName.value;
+        let editedAge = e.target.editedAge.value;
+        if (!editId || !editedName || !editedAge) return;
+        let editedUser = {
+          name: editedName,
+          age: parseInt(editedAge),
+        };
+
+        await fetch(`http://localhost:3000/users/${editId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editedUser),
+        });
+      });
+
+      function editData(editId, editName, editAge) {
+        document.querySelector("#setId").value = editId;
+        document.querySelector("#setName").value = editName;
+        document.querySelector("#setAge").value = editAge;
+      }
+
+      // delete
+
+      async function deleteUser(deleteId) {
+        let confm = confirm("are you confirm delete this user"); // true or false
+
+        if (!confm) return; // stop programe
+
+        await fetch(`http://localhost:3000/users/${deleteId}`, {
+          method: "DELETE",
+        });
+      }
+    </script>
+  </body>
+</html>
